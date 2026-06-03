@@ -118,7 +118,9 @@
     const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
     const reportLink = document.getElementById('reportLink');
     const sessionBox = document.getElementById('sessionBox');
-    reportLink.href = `report.php?session_id=${encodeURIComponent(sessionId)}`;
+    function updateReportLink() {
+        reportLink.href = `report.php?session_id=${encodeURIComponent(sessionId)}#counts=${encodeURIComponent(JSON.stringify(counts))}`;
+    }
     sessionBox.textContent = sessionId;
 
     const els = {
@@ -130,21 +132,29 @@
     const keyEls = {};
     els.keyboard.querySelectorAll('[data-code]').forEach(el => { keyEls[el.dataset.code] = el; el.addEventListener('mousedown', () => hit(el.dataset.code, el.textContent.trim())); });
 
-    const counts = {}; let queue = []; let timer = null; let sounds = false;
+    const storageKey = `keyboardMouseDiagnostic:${sessionId}:counts`;
+    const counts = {}; let sounds = false;
+
+    function persistCounts() {
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(counts));
+        } catch (error) {
+            // The report link hash still carries a snapshot when storage is unavailable.
+        }
+        updateReportLink();
+    }
     function tone() {
         if (!sounds || !window.AudioContext) return;
         const ctx = new AudioContext(); const o = ctx.createOscillator(); const g = ctx.createGain();
         o.type = 'triangle'; o.frequency.value = 220; g.gain.value = 0.02; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.03);
     }
-    function queueLog(item) { queue.push(item); if (!timer) timer = setTimeout(flush, 120); }
-    function flush() { const items = queue.splice(0); timer = null; fetch('log_key.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items}) }).catch(() => {}); }
     function updateStats() { const keys = Object.keys(counts); els.unique.textContent = keys.length; els.counts.textContent = keys.length ? keys.map(k => `${k}: ${counts[k]}`).join(' • ') : 'No keys pressed yet.'; }
 
     function hit(code, keyValue) {
         els.last.textContent = `${keyValue} · ${code}`; counts[code] = (counts[code] || 0) + 1;
         if (keyEls[code]) { keyEls[code].classList.add('pressed','ok'); setTimeout(() => keyEls[code]?.classList.remove('pressed'), 110); }
         if (mouseEls[code]) { mouseEls[code].classList.add('active'); setTimeout(() => mouseEls[code]?.classList.remove('active'), 110); }
-        tone(); updateStats(); queueLog({ session_id: sessionId, key_code: code, key_value: String(keyValue || code) });
+        tone(); updateStats(); persistCounts();
     }
 
     window.addEventListener('keydown', e => { if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) e.preventDefault(); hit(e.code, e.key); }, { passive:false });
@@ -154,326 +164,13 @@
     });
     window.addEventListener('contextmenu', e => e.preventDefault());
 
-    els.reset.addEventListener('click', () => { Object.values(keyEls).forEach(k => k.classList.remove('pressed','ok')); Object.keys(counts).forEach(k => delete counts[k]); els.last.textContent = '—'; updateStats(); });
-    els.clear.addEventListener('click', () => { Object.keys(counts).forEach(k => delete counts[k]); updateStats(); });
+    els.reset.addEventListener('click', () => { Object.values(keyEls).forEach(k => k.classList.remove('pressed','ok')); Object.keys(counts).forEach(k => delete counts[k]); els.last.textContent = '—'; updateStats(); persistCounts(); });
+    els.clear.addEventListener('click', () => { Object.keys(counts).forEach(k => delete counts[k]); updateStats(); persistCounts(); });
     els.markAll.addEventListener('click', () => Object.values(keyEls).forEach(k => k.classList.add('ok')));
     els.toggleSounds.addEventListener('click', () => { sounds = !sounds; els.toggleSounds.textContent = `Sound: ${sounds ? 'On' : 'Off'}`; });
+    persistCounts();
     updateStats();
 })();
 </script>
 </body>
-</html>
-
-                    
-
-
-
-
-
-
-
-
-
-        <script>
-
-        (function() {
-
-            // Unique session id
-
-            const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-
-
-
-            // Update report link
-
-            const reportLink = document.getElementById('reportLink');
-
-            reportLink.href = `report.php?session_id=${encodeURIComponent(sessionId)}`;
-
-
-
-            const lastKeyEl = document.getElementById('lastKey');
-
-            const uniqueCountEl = document.getElementById('uniqueCount');
-
-            const countsEl = document.getElementById('counts');
-
-            const keyboard = document.getElementById('keyboard');
-
-            const resetBtn = document.getElementById('resetBtn');
-
-            const clearCountsBtn = document.getElementById('clearCountsBtn');
-
-            const markAllBtn = document.getElementById('markAllBtn');
-
-
-
-            // map of code->element
-
-            const keyEls = {};
-
-            keyboard.querySelectorAll('[data-code]').forEach(el => {
-
-                keyEls[el.dataset.code] = el;
-
-                el.style.cursor = 'pointer';
-
-                el.addEventListener('mousedown', () => {
-
-                    // simulate press
-
-                    handleKey({
-
-                        code: el.dataset.code,
-
-                        key: el.textContent.trim()
-
-                    });
-
-                    setTimeout(() => handleKeyUp({
-
-                        code: el.dataset.code
-
-                    }), 120);
-
-                });
-
-            });
-
-
-
-            const counts = {}; // code -> count
-
-
-
-            function updateStats() {
-
-                const keys = Object.keys(counts);
-
-                uniqueCountEl.textContent = keys.length;
-
-                countsEl.textContent = keys.length ? keys.map(k => `${k}: ${counts[k]}`).join(' • ') :
-
-                    'No keys pressed yet.';
-
-            }
-
-
-
-            // batching logs briefly so we don't fire too many requests
-
-            let queue = [];
-
-            let timer = null;
-
-
-
-            function queueLog(payload) {
-
-                queue.push(payload);
-
-                if (!timer) timer = setTimeout(flushQueue, 150);
-
-            }
-
-
-
-            function flushQueue() {
-
-                const items = queue.splice(0);
-
-                timer = null;
-
-                items.forEach(item => {
-
-                    fetch('log_key.php', {
-
-                        method: 'POST',
-
-                        headers: {
-
-                            'Content-Type': 'application/json'
-
-                        },
-
-                        body: JSON.stringify(item)
-
-                    }).catch(() => {
-
-                        /* ignore errors silently */
-
-                    });
-
-                });
-
-            }
-
-
-
-            function handleKey(e) {
-
-                const code = e.code || (typeof e === 'string' ? e : 'Unknown');
-
-                const keyVal = e.key ?? code;
-
-                lastKeyEl.textContent = `${keyVal} · ${code}`;
-
-
-
-                // UI highlight
-
-                const el = keyEls[code];
-
-                if (el) {
-
-                    el.classList.add('pressed');
-
-                    el.classList.add('ok');
-
-                }
-
-
-
-                counts[code] = (counts[code] || 0) + 1;
-
-                updateStats();
-
-
-
-                // send log to server
-
-                queueLog({
-
-                    session_id: sessionId,
-
-                    key_code: code,
-
-                    key_value: String(keyVal)
-
-                });
-
-            }
-
-
-
-            function handleKeyUp(e) {
-
-                const code = e.code;
-
-                const el = keyEls[code];
-
-                if (el) el.classList.remove('pressed');
-
-            }
-
-
-
-            window.addEventListener('keydown', e => {
-
-                // prevent default scrolling for space etc. only when not in an input
-
-                if (!['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-
-                    e.preventDefault();
-
-                }
-
-                handleKey(e);
-
-            }, {
-
-                passive: false
-
-            });
-
-
-
-            window.addEventListener('keyup', e => {
-
-                handleKeyUp(e);
-
-            });
-
-
-
-            resetBtn.addEventListener('click', () => {
-
-                Object.values(keyEls).forEach(k => k.classList.remove('ok', 'pressed'));
-
-                for (let p in counts) delete counts[p];
-
-                lastKeyEl.textContent = '—';
-
-                updateStats();
-
-            });
-
-
-
-            clearCountsBtn.addEventListener('click', () => {
-
-                for (let p in counts) delete counts[p];
-
-                updateStats();
-
-            });
-
-
-
-            markAllBtn.addEventListener('click', () => {
-
-                Object.values(keyEls).forEach(k => k.classList.add('ok'));
-
-            });
-
-
-
-            updateStats();
-
-        })();
-
-        </script>
-
-</body>
-
-
-
-<footer style="background:#111; color:#eee; padding:20px 10px; text-align:center; font-size:14px;">
-
-    <p>
-
-        &copy; <span id="year"></span> Keyboard Tester Tool — Created by
-
-        <strong>Anupam Manna</strong>
-
-        <span style="color:#888;">(Data Scientist &amp; Software Developer)</span>
-
-    </p>
-
-    <p>
-
-        📧 Email: <a href="mailto:contact@keyboard-tester.free.nf" style="color:#00bfff;">am7059141480@gmail.com</a> |
-
-        | 📱 Phone: <span>+91</span><span>7059</span><span>141480</span>
-
-    </p>
-
-    <p>
-
-        <a href="https://keyboard-tester.free.nf/privacy-policy" style="color:#bbb;">Privacy Policy</a> |
-
-        <a href="https://keyboard-tester.free.nf/terms" style="color:#bbb;">Terms of Service</a>
-
-    </p>
-
-    <script>
-
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    </script>
-
-</footer>
-
-
-
 </html>
