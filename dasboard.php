@@ -3,7 +3,7 @@ $cards = [
     [
         'title' => 'Microphone & Speaker Diagnostics',
         'description' => 'Run voice waveform capture, echo testing, speaker channel checks, and ambient noise-level detection.',
-        'href' => 'microphoneandspeaker/index.php',
+        'href' => 'mic_and_spkr/index.php',
         'cta' => 'Launch Audio Lab',
         'icon' => '🎙️',
         'accent' => '#22d3ee',
@@ -12,7 +12,7 @@ $cards = [
     [
         'title' => 'Keyboard & Mouse Diagnostics',
         'description' => 'Validate key presses, media keys, mouse clicks, and generate a missing-key report.',
-        'href' => 'keyboardandmouse/index.php',
+        'href' => 'kb_and_mouse/index.php',
         'cta' => 'Start Input Quest',
         'icon' => '⌨️',
         'accent' => '#f472b6',
