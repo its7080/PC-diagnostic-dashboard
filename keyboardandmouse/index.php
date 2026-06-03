@@ -1,5 +1,65 @@
 <?php
 // index.php
+function renderKey(string $code, string $label, string $class = '', float $units = 1): void
+{
+    $classes = trim('key ' . $class);
+    $safeCode = htmlspecialchars($code, ENT_QUOTES, 'UTF-8');
+    $safeClasses = htmlspecialchars($classes, ENT_QUOTES, 'UTF-8');
+    $width = 46 * $units + 8 * ($units - 1);
+    echo '<div class="' . $safeClasses . '" data-code="' . $safeCode . '" style="--w:' . $width . 'px">' . $label . '</div>';
+}
+
+$functionGroups = [
+    [['Escape', 'Esc', 'utility']],
+    [['F1', 'F1', 'function'], ['F2', 'F2', 'function'], ['F3', 'F3', 'function'], ['F4', 'F4', 'function']],
+    [['F5', 'F5', 'function'], ['F6', 'F6', 'function'], ['F7', 'F7', 'function'], ['F8', 'F8', 'function']],
+    [['F9', 'F9', 'function'], ['F10', 'F10', 'function'], ['F11', 'F11', 'function'], ['F12', 'F12', 'function']],
+];
+
+$typingRows = [
+    [
+        ['Backquote', '<span>~</span><span>`</span>'], ['Digit1', '<span>!</span><span>1</span>'], ['Digit2', '<span>@</span><span>2</span>'],
+        ['Digit3', '<span>#</span><span>3</span>'], ['Digit4', '<span>$</span><span>4</span>'], ['Digit5', '<span>%</span><span>5</span>'],
+        ['Digit6', '<span>^</span><span>6</span>'], ['Digit7', '<span>&amp;</span><span>7</span>'], ['Digit8', '<span>*</span><span>8</span>'],
+        ['Digit9', '<span>(</span><span>9</span>'], ['Digit0', '<span>)</span><span>0</span>'], ['Minus', '<span>_</span><span>-</span>'],
+        ['Equal', '<span>+</span><span>=</span>'], ['Backspace', 'Backspace', 'wide', 2],
+    ],
+    [
+        ['Tab', 'Tab', 'wide', 1.5], ['KeyQ', 'Q'], ['KeyW', 'W'], ['KeyE', 'E'], ['KeyR', 'R'], ['KeyT', 'T'], ['KeyY', 'Y'],
+        ['KeyU', 'U'], ['KeyI', 'I'], ['KeyO', 'O'], ['KeyP', 'P'], ['BracketLeft', '<span>{</span><span>[</span>'],
+        ['BracketRight', '<span>}</span><span>]</span>'], ['Backslash', '<span>|</span><span>\</span>', 'wide', 1.5],
+    ],
+    [
+        ['CapsLock', 'Caps Lock', 'wide', 1.75], ['KeyA', 'A'], ['KeyS', 'S'], ['KeyD', 'D'], ['KeyF', 'F'], ['KeyG', 'G'],
+        ['KeyH', 'H'], ['KeyJ', 'J'], ['KeyK', 'K'], ['KeyL', 'L'], ['Semicolon', '<span>:</span><span>;</span>'],
+        ['Quote', '<span>&quot;</span><span>&apos;</span>'], ['Enter', 'Enter', 'enter wide', 2.25],
+    ],
+    [
+        ['ShiftLeft', 'Shift', 'wide', 2.25], ['KeyZ', 'Z'], ['KeyX', 'X'], ['KeyC', 'C'], ['KeyV', 'V'], ['KeyB', 'B'],
+        ['KeyN', 'N'], ['KeyM', 'M'], ['Comma', '<span>&lt;</span><span>,</span>'], ['Period', '<span>&gt;</span><span>.</span>'],
+        ['Slash', '<span>?</span><span>/</span>'], ['ShiftRight', 'Shift', 'wide', 2.75],
+    ],
+    [
+        ['ControlLeft', 'Ctrl', 'system', 1.25], ['MetaLeft', 'Win', 'system', 1.25], ['AltLeft', 'Alt', 'system', 1.25],
+        ['Space', 'Space', 'space', 6.25], ['AltRight', 'Alt', 'system', 1.25], ['MetaRight', 'Win', 'system', 1.25],
+        ['ContextMenu', 'Menu', 'system', 1.25], ['ControlRight', 'Ctrl', 'system', 1.25],
+    ],
+];
+
+$navTop = [
+    ['PrintScreen', 'PrtSc'], ['ScrollLock', 'ScrLk'], ['Pause', 'Pause'],
+];
+$navRows = [
+    [['Insert', 'Ins'], ['Home', 'Home'], ['PageUp', 'PgUp']],
+    [['Delete', 'Del'], ['End', 'End'], ['PageDown', 'PgDn']],
+];
+$numpadRows = [
+    [['NumLock', 'Num'], ['NumpadDivide', '/'], ['NumpadMultiply', '*'], ['NumpadSubtract', '-']],
+    [['Numpad7', '<span>7</span><small>Home</small>'], ['Numpad8', '<span>8</span><small>↑</small>'], ['Numpad9', '<span>9</span><small>PgUp</small>'], ['NumpadAdd', '+', 'tall']],
+    [['Numpad4', '<span>4</span><small>←</small>'], ['Numpad5', '5'], ['Numpad6', '<span>6</span><small>→</small>']],
+    [['Numpad1', '<span>1</span><small>End</small>'], ['Numpad2', '<span>2</span><small>↓</small>'], ['Numpad3', '<span>3</span><small>PgDn</small>'], ['NumpadEnter', 'Enter', 'enter tall']],
+    [['Numpad0', '<span>0</span><small>Ins</small>', 'wide', 2], ['NumpadDecimal', '<span>.</span><small>Del</small>']],
+];
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,15 +75,14 @@
         --muted: #94a3b8;
         --accent: #60a5fa;
         --good: #10b981;
-        --warn: #f59e0b;
-        --typewriter: #98c9d8;
-        --function: #f2c575;
-        --enter: #f5f1b8;
-        --system: #eba5a5;
-        --numpad: #9eadd0;
-        --other: #ffffff;
-        --application: #a97cad;
-        --cursor: #a8d2b2;
+        --key: #1f2a3a;
+        --key-top: #354257;
+        --key-border: #4b5e7d;
+        --function: #7c3aed;
+        --system: #334155;
+        --enter: #059669;
+        --nav: #0f766e;
+        --numpad: #1d4ed8;
     }
 
     * { box-sizing: border-box; }
@@ -37,7 +96,7 @@
         background: radial-gradient(circle at 20% 20%, #151b2b 0%, var(--bg) 60%);
     }
 
-    .container { max-width: 1800px; margin: 0 auto; }
+    .container { max-width: 1480px; margin: 0 auto; }
 
     .card {
         padding: 18px;
@@ -84,134 +143,146 @@
 
     .keyboard-area {
         overflow-x: auto;
-        padding: 12px 2px 6px;
+        padding: 8px 2px 6px;
     }
 
     .keyboard-shell {
         width: max-content;
-        min-width: 1740px;
+        min-width: 1200px;
         margin: 0 auto;
-        padding: 54px 64px 44px;
-        border-radius: 46px;
-        background: #f4f5f7;
-        color: #28282d;
+        padding: 18px;
+        border: 1px solid rgba(148,163,184,.18);
+        border-radius: 18px;
+        background: #0b0f17;
         user-select: none;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 28px 70px rgba(0,0,0,.32);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 22px 48px rgba(0,0,0,.34);
     }
 
-    .keyboard-layout {
-        display: grid;
-        grid-template-columns: repeat(26, 58px);
-        grid-template-rows: repeat(6, 56px);
-        gap: 8px 10px;
-        align-items: stretch;
+    .keyboard-row,
+    .segment-row,
+    .key-group,
+    .arrow-grid,
+    .numpad-grid,
+    .nav-grid {
+        display: flex;
+        gap: 8px;
     }
+
+    .keyboard-row { align-items: flex-start; margin-bottom: 12px; }
+    .key-group { padding: 0 8px 0 0; }
+
+    .segment-grid {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        gap: 18px;
+        align-items: end;
+    }
+
+    .segment {
+        padding: 10px;
+        border: 1px solid rgba(148,163,184,.16);
+        border-radius: 14px;
+        background: rgba(15, 23, 42, .62);
+    }
+
+    .segment-title {
+        margin: 0 0 8px;
+        color: #cbd5e1;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .segment-row { margin-bottom: 8px; }
+    .segment-row:last-child { margin-bottom: 0; }
 
     .key {
         position: relative;
-        display: flex;
+        display: inline-flex;
+        flex: 0 0 var(--w, 46px);
+        width: var(--w, 46px);
+        height: 46px;
         align-items: center;
         justify-content: center;
-        min-width: 0;
-        min-height: 0;
-        padding: 5px 7px;
-        border: 0;
-        border-radius: 7px;
-        color: #29272b;
-        font-size: 16px;
-        line-height: 1.08;
+        padding: 6px;
+        border: 1px solid var(--key-border);
+        border-radius: 8px;
+        color: #eaf2ff;
+        font-size: 13px;
+        line-height: 1.05;
         text-align: center;
         cursor: pointer;
-        background: var(--typewriter);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.34), 0 2px 0 rgba(0,0,0,.03);
-        transition: transform .07s ease, box-shadow .07s ease, filter .16s ease, outline-color .16s ease;
+        background: linear-gradient(180deg, var(--key-top), var(--key));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 4px 8px rgba(0,0,0,.32);
+        transition: transform .07s ease, box-shadow .07s ease, background .2s ease, outline-color .16s ease;
     }
 
-    .key .primary { display: block; font-size: 27px; line-height: 1; }
-    .key .sub { display: block; margin-top: 4px; font-size: 16px; }
-    .key .small { font-size: 14px; }
-    .key .corner { position: absolute; left: 7px; bottom: 6px; font-size: 16px; }
-    .key .corner.top { top: 6px; bottom: auto; }
-    .key .corner.right { right: 7px; left: auto; }
-    .key.left-label { align-items: flex-start; justify-content: flex-start; text-align: left; }
-    .key.right-label { align-items: flex-end; justify-content: flex-end; text-align: right; }
-    .key.big-symbol { font-size: 34px; }
-    .key.two-line { font-size: 16px; }
-
-    .function { background: var(--function); }
-    .enter-key { background: var(--enter); }
-    .system { background: var(--system); }
-    .numpad { background: var(--numpad); }
-    .other { background: var(--other); }
-    .application { background: var(--application); }
-    .cursor { background: var(--cursor); }
-    .blank { color: transparent; }
+    .key span,
+    .key small { display: block; }
+    .key small { margin-top: 3px; color: #cbd5e1; font-size: 10px; }
+    .key.wide { justify-content: flex-start; padding-left: 10px; }
+    .key.space { justify-content: center; }
+    .key.function { --key: #4c1d95; --key-top: var(--function); --key-border: #8b5cf6; }
+    .key.system { --key: #1f2937; --key-top: var(--system); --key-border: #64748b; }
+    .key.enter { --key: #065f46; --key-top: var(--enter); --key-border: #34d399; }
+    .key.nav { --key: #134e4a; --key-top: var(--nav); --key-border: #2dd4bf; }
+    .key.numpad { --key: #1e3a8a; --key-top: var(--numpad); --key-border: #60a5fa; }
+    .key.utility { --key: #374151; --key-top: #4b5563; --key-border: #9ca3af; }
+    .key.tall { height: 100px; }
 
     .key.pressed {
-        transform: translateY(3px);
-        box-shadow: inset 0 4px 9px rgba(0,0,0,.22);
-        filter: saturate(1.2) brightness(.93);
+        transform: translateY(2px);
+        box-shadow: inset 0 3px 7px rgba(0,0,0,.45);
+        background: linear-gradient(180deg,#1d4ed8,#1e3a8a);
     }
 
-    .key.ok { outline: 3px solid rgba(16,185,129,.62); outline-offset: 2px; }
+    .key.ok { outline: 2px solid rgba(16,185,129,.86); outline-offset: 2px; }
 
-    .lock-lights {
-        grid-column: 22 / 26;
-        grid-row: 1;
+    .nav-grid,
+    .numpad-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        align-items: center;
-        gap: 18px;
-        padding: 0 0 0 8px;
-        font-size: 14px;
-        line-height: 1.05;
+        gap: 8px;
     }
 
-    .lock-light {
+    .nav-grid { grid-template-columns: repeat(3, 46px); }
+    .numpad-grid { grid-template-columns: repeat(4, 46px); align-items: stretch; }
+    .nav-grid .key,
+    .numpad-grid .key { width: auto; flex-basis: auto; }
+    .numpad-grid .tall { grid-row: span 2; height: auto; }
+    .numpad-grid .wide { grid-column: span 2; width: auto; }
+
+    .arrow-segment { align-self: end; }
+    .arrow-grid {
         display: grid;
-        grid-template-columns: 14px auto;
-        align-items: center;
-        gap: 6px;
+        grid-template-columns: repeat(3, 46px);
+        grid-template-rows: repeat(2, 46px);
+        gap: 8px;
     }
 
-    .lock-light::before {
-        width: 14px;
-        height: 7px;
-        content: "";
-        background: #29292e;
-    }
+    .arrow-grid .key { width: auto; flex-basis: auto; }
+    .arrow-up { grid-column: 2; grid-row: 1; }
+    .arrow-left { grid-column: 1; grid-row: 2; }
+    .arrow-down { grid-column: 2; grid-row: 2; }
+    .arrow-right { grid-column: 3; grid-row: 2; }
 
-    .keyboard-legend {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(220px, 1fr));
-        gap: 18px 64px;
-        max-width: 1120px;
-        margin: 34px auto 0;
-        color: #f3f4f6;
-    }
-
-    .legend-item {
+    .legend {
         display: flex;
-        align-items: center;
-        gap: 14px;
-        font-size: 1.05rem;
-        font-weight: 800;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        margin-top: 14px;
+        color: #cbd5e1;
+        font-size: .86rem;
     }
 
-    .legend-swatch {
-        width: 58px;
-        height: 54px;
-        border-radius: 7px;
-        background: var(--typewriter);
-    }
-
-    .legend-swatch.function { background: var(--function); }
-    .legend-swatch.enter-key { background: var(--enter); }
-    .legend-swatch.system { background: var(--system); }
-    .legend-swatch.numpad { background: var(--numpad); }
-    .legend-swatch.other { background: var(--other); }
-    .legend-swatch.application { background: var(--application); }
-    .legend-swatch.cursor { background: var(--cursor); }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-item::before { width: 16px; height: 16px; content: ""; border-radius: 4px; background: var(--swatch); }
+    .legend-item.typing { --swatch: #354257; }
+    .legend-item.function { --swatch: var(--function); }
+    .legend-item.system { --swatch: var(--system); }
+    .legend-item.enter { --swatch: var(--enter); }
+    .legend-item.nav { --swatch: var(--nav); }
+    .legend-item.numpad { --swatch: var(--numpad); }
 
     .mouse-pad { margin-top: 20px; display:flex; align-items:center; justify-content:center; }
 
@@ -265,8 +336,7 @@
     @media (max-width: 900px) {
         body { padding: 12px; }
         .stats { grid-template-columns: 1fr; }
-        .keyboard-shell { padding: 32px 34px 30px; border-radius: 32px; }
-        .keyboard-legend { grid-template-columns: 1fr; gap: 12px; }
+        .keyboard-shell { min-width: 1120px; padding: 12px; }
     }
     </style>
 </head>
@@ -274,7 +344,7 @@
 <div class="container">
     <div class="card">
         <h1>Keyboard & Mouse Diagnostic Dashboard</h1>
-        <p class="lead">Test keys, lock indicators, cursor controls, numeric keypad, and mouse buttons with the grouped keyboard layout shown in your reference.</p>
+        <p class="lead">Test a segmented QWERTY ANSI keyboard: function row, typing block, navigation keys, cursor cluster, numpad, and mouse buttons.</p>
 
         <div class="controls">
             <button id="resetBtn" class="btn">Reset UI</button>
@@ -291,135 +361,67 @@
         </div>
 
         <div class="keyboard-area">
-            <div id="keyboard" class="keyboard-shell" aria-label="full keyboard layout">
-                <div class="keyboard-layout">
-                    <div class="key other" data-code="Escape" style="grid-column:1;grid-row:1;">Esc</div>
-                    <div class="key function" data-code="F1" style="grid-column:4;grid-row:1;"><span class="primary">F1</span></div>
-                    <div class="key function" data-code="F2" style="grid-column:5;grid-row:1;"><span class="primary">F2</span></div>
-                    <div class="key function" data-code="F3" style="grid-column:6;grid-row:1;"><span class="primary">F3</span></div>
-                    <div class="key function" data-code="F4" style="grid-column:7;grid-row:1;"><span class="primary">F4</span></div>
-                    <div class="key function" data-code="F5" style="grid-column:9;grid-row:1;"><span class="primary">F5</span></div>
-                    <div class="key function" data-code="F6" style="grid-column:10;grid-row:1;"><span class="primary">F6</span></div>
-                    <div class="key function" data-code="F7" style="grid-column:11;grid-row:1;"><span class="primary">F7</span></div>
-                    <div class="key function" data-code="F8" style="grid-column:12;grid-row:1;"><span class="primary">F8</span></div>
-                    <div class="key function" data-code="F9" style="grid-column:14;grid-row:1;"><span class="primary">F9</span></div>
-                    <div class="key function" data-code="F10" style="grid-column:15;grid-row:1;"><span class="primary">F10</span></div>
-                    <div class="key function" data-code="F11" style="grid-column:16;grid-row:1;"><span class="primary">F11</span></div>
-                    <div class="key function" data-code="F12" style="grid-column:17;grid-row:1;"><span class="primary">F12</span></div>
-                    <div class="key other two-line" data-code="PrintScreen" style="grid-column:19;grid-row:1;">Print<br>Scrn<br>SysRq</div>
-                    <div class="key other two-line" data-code="ScrollLock" style="grid-column:20;grid-row:1;">Scroll<br>Lock</div>
-                    <div class="key other two-line" data-code="Pause" style="grid-column:21;grid-row:1;">Pause<br>Break</div>
-                    <div class="lock-lights" aria-label="keyboard lock indicators">
-                        <span class="lock-light">Num<br>Lock</span>
-                        <span class="lock-light">Caps<br>Lock</span>
-                        <span class="lock-light">Scroll<br>Lock</span>
+            <div id="keyboard" class="keyboard-shell" aria-label="segmented QWERTY ANSI keyboard layout">
+                <div class="keyboard-row" aria-label="function key row">
+                    <?php foreach ($functionGroups as $group): ?>
+                        <div class="key-group">
+                            <?php foreach ($group as $key) renderKey($key[0], $key[1], $key[2] ?? '', $key[3] ?? 1); ?>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="key-group">
+                        <?php foreach ($navTop as $key) renderKey($key[0], $key[1], 'utility', 1); ?>
+                    </div>
+                </div>
+
+                <div class="segment-grid">
+                    <section class="segment typing-segment" aria-label="main typing keys">
+                        <p class="segment-title">QWERTY ANSI typing block</p>
+                        <?php foreach ($typingRows as $row): ?>
+                            <div class="segment-row">
+                                <?php foreach ($row as $key) renderKey($key[0], $key[1], $key[2] ?? '', $key[3] ?? 1); ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </section>
+
+                    <div>
+                        <section class="segment" aria-label="navigation keys">
+                            <p class="segment-title">Navigation</p>
+                            <div class="nav-grid">
+                                <?php foreach ($navRows as $row): ?>
+                                    <?php foreach ($row as $key) renderKey($key[0], $key[1], 'nav', 1); ?>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                        <section class="segment arrow-segment" aria-label="cursor control keys" style="margin-top:18px;">
+                            <p class="segment-title">Cursor</p>
+                            <div class="arrow-grid">
+                                <div class="key nav arrow-up" data-code="ArrowUp">↑</div>
+                                <div class="key nav arrow-left" data-code="ArrowLeft">←</div>
+                                <div class="key nav arrow-down" data-code="ArrowDown">↓</div>
+                                <div class="key nav arrow-right" data-code="ArrowRight">→</div>
+                            </div>
+                        </section>
                     </div>
 
-                    <div class="key left-label" data-code="Backquote" style="grid-column:1;grid-row:2;"><span class="corner top">~</span><span class="corner">`</span></div>
-                    <div class="key left-label" data-code="Digit1" style="grid-column:2;grid-row:2;"><span class="corner top">!</span><span class="corner">1</span></div>
-                    <div class="key left-label" data-code="Digit2" style="grid-column:3;grid-row:2;"><span class="corner top">@</span><span class="corner">2</span></div>
-                    <div class="key left-label" data-code="Digit3" style="grid-column:4;grid-row:2;"><span class="corner top">#</span><span class="corner">3</span></div>
-                    <div class="key left-label" data-code="Digit4" style="grid-column:5;grid-row:2;"><span class="corner top">$</span><span class="corner">4</span></div>
-                    <div class="key left-label" data-code="Digit5" style="grid-column:6;grid-row:2;"><span class="corner top">%</span><span class="corner">5</span></div>
-                    <div class="key left-label" data-code="Digit6" style="grid-column:7;grid-row:2;"><span class="corner top">^</span><span class="corner">6</span></div>
-                    <div class="key left-label" data-code="Digit7" style="grid-column:8;grid-row:2;"><span class="corner top">&amp;</span><span class="corner">7</span></div>
-                    <div class="key left-label" data-code="Digit8" style="grid-column:9;grid-row:2;"><span class="corner top">*</span><span class="corner">8</span></div>
-                    <div class="key left-label" data-code="Digit9" style="grid-column:10;grid-row:2;"><span class="corner top">(</span><span class="corner">9</span></div>
-                    <div class="key left-label" data-code="Digit0" style="grid-column:11;grid-row:2;"><span class="corner top">)</span><span class="corner">0</span></div>
-                    <div class="key left-label" data-code="Minus" style="grid-column:12;grid-row:2;"><span class="corner top">_</span><span class="corner">-</span></div>
-                    <div class="key left-label" data-code="Equal" style="grid-column:13;grid-row:2;"><span class="corner top">+</span><span class="corner">=</span></div>
-                    <div class="key left-label" data-code="Backslash" style="grid-column:14;grid-row:2;"><span class="corner top">|</span><span class="corner">\</span></div>
-                    <div class="key big-symbol" data-code="Backspace" style="grid-column:15 / span 2;grid-row:2;">←</div>
-                    <div class="key other" data-code="Insert" style="grid-column:19;grid-row:2;">Insert</div>
-                    <div class="key other" data-code="Home" style="grid-column:20;grid-row:2;">Home</div>
-                    <div class="key other two-line" data-code="PageUp" style="grid-column:21;grid-row:2;">Page<br>Up</div>
-                    <div class="key numpad two-line" data-code="NumLock" style="grid-column:23;grid-row:2;">Num<br>Lock</div>
-                    <div class="key numpad" data-code="NumpadDivide" style="grid-column:24;grid-row:2;">/</div>
-                    <div class="key numpad" data-code="NumpadMultiply" style="grid-column:25;grid-row:2;">*</div>
-                    <div class="key numpad" data-code="NumpadSubtract" style="grid-column:26;grid-row:2;">-</div>
+                    <section class="segment" aria-label="numeric keypad">
+                        <p class="segment-title">Numeric keypad</p>
+                        <div class="numpad-grid">
+                            <?php foreach ($numpadRows as $row): ?>
+                                <?php foreach ($row as $key) renderKey($key[0], $key[1], trim('numpad ' . ($key[2] ?? '')), $key[3] ?? 1); ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                </div>
 
-                    <div class="key left-label" data-code="Tab" style="grid-column:1 / span 2;grid-row:3;">Tab <span class="corner right">↹</span></div>
-                    <div class="key" data-code="KeyQ" style="grid-column:3;grid-row:3;"><span class="primary">Q</span></div>
-                    <div class="key" data-code="KeyW" style="grid-column:4;grid-row:3;"><span class="primary">W</span></div>
-                    <div class="key" data-code="KeyE" style="grid-column:5;grid-row:3;"><span class="primary">E</span></div>
-                    <div class="key" data-code="KeyR" style="grid-column:6;grid-row:3;"><span class="primary">R</span></div>
-                    <div class="key" data-code="KeyT" style="grid-column:7;grid-row:3;"><span class="primary">T</span></div>
-                    <div class="key" data-code="KeyY" style="grid-column:8;grid-row:3;"><span class="primary">Y</span></div>
-                    <div class="key" data-code="KeyU" style="grid-column:9;grid-row:3;"><span class="primary">U</span></div>
-                    <div class="key" data-code="KeyI" style="grid-column:10;grid-row:3;"><span class="primary">I</span></div>
-                    <div class="key" data-code="KeyO" style="grid-column:11;grid-row:3;"><span class="primary">O</span></div>
-                    <div class="key" data-code="KeyP" style="grid-column:12;grid-row:3;"><span class="primary">P</span></div>
-                    <div class="key left-label" data-code="BracketLeft" style="grid-column:13;grid-row:3;"><span class="corner top">{</span><span class="corner">[</span></div>
-                    <div class="key left-label" data-code="BracketRight" style="grid-column:14;grid-row:3;"><span class="corner top">}</span><span class="corner">]</span></div>
-                    <div class="key enter-key big-symbol" data-code="Enter" style="grid-column:15 / span 2;grid-row:3 / span 2;align-items:flex-end;justify-content:flex-end;padding:10px;">↵</div>
-                    <div class="key other" data-code="Delete" style="grid-column:19;grid-row:3;">Delete</div>
-                    <div class="key other" data-code="End" style="grid-column:20;grid-row:3;">End</div>
-                    <div class="key other two-line" data-code="PageDown" style="grid-column:21;grid-row:3;">Page<br>Down</div>
-                    <div class="key numpad left-label" data-code="Numpad7" style="grid-column:23;grid-row:3;"><span class="corner top">7</span><span class="corner">Home</span></div>
-                    <div class="key numpad" data-code="Numpad8" style="grid-column:24;grid-row:3;">8 ↑</div>
-                    <div class="key numpad left-label" data-code="Numpad9" style="grid-column:25;grid-row:3;"><span class="corner top">9</span><span class="corner">PgUp</span></div>
-                    <div class="key numpad" data-code="NumpadAdd" style="grid-column:26;grid-row:3 / span 2;">+</div>
-
-                    <div class="key two-line" data-code="CapsLock" style="grid-column:1 / span 2;grid-row:4;">Caps<br>Lock</div>
-                    <div class="key" data-code="KeyA" style="grid-column:3;grid-row:4;"><span class="primary">A</span></div>
-                    <div class="key" data-code="KeyS" style="grid-column:4;grid-row:4;"><span class="primary">S</span></div>
-                    <div class="key" data-code="KeyD" style="grid-column:5;grid-row:4;"><span class="primary">D</span></div>
-                    <div class="key" data-code="KeyF" style="grid-column:6;grid-row:4;"><span class="primary">F</span></div>
-                    <div class="key" data-code="KeyG" style="grid-column:7;grid-row:4;"><span class="primary">G</span></div>
-                    <div class="key" data-code="KeyH" style="grid-column:8;grid-row:4;"><span class="primary">H</span></div>
-                    <div class="key" data-code="KeyJ" style="grid-column:9;grid-row:4;"><span class="primary">J</span></div>
-                    <div class="key" data-code="KeyK" style="grid-column:10;grid-row:4;"><span class="primary">K</span></div>
-                    <div class="key" data-code="KeyL" style="grid-column:11;grid-row:4;"><span class="primary">L</span></div>
-                    <div class="key left-label" data-code="Semicolon" style="grid-column:12;grid-row:4;"><span class="corner top">:</span><span class="corner">;</span></div>
-                    <div class="key left-label" data-code="Quote" style="grid-column:13;grid-row:4;"><span class="corner top">&quot;</span><span class="corner">'</span></div>
-                    <div class="key numpad left-label" data-code="Numpad4" style="grid-column:23;grid-row:4;"><span class="corner top">4</span><span class="corner">←</span></div>
-                    <div class="key numpad" data-code="Numpad5" style="grid-column:24;grid-row:4;">5</div>
-                    <div class="key numpad left-label" data-code="Numpad6" style="grid-column:25;grid-row:4;"><span class="corner top">6</span><span class="corner right">→</span></div>
-
-                    <div class="key right-label" data-code="ShiftLeft" style="grid-column:1 / span 3;grid-row:5;">Shift</div>
-                    <div class="key" data-code="KeyZ" style="grid-column:4;grid-row:5;"><span class="primary">Z</span></div>
-                    <div class="key" data-code="KeyX" style="grid-column:5;grid-row:5;"><span class="primary">X</span></div>
-                    <div class="key" data-code="KeyC" style="grid-column:6;grid-row:5;"><span class="primary">C</span></div>
-                    <div class="key" data-code="KeyV" style="grid-column:7;grid-row:5;"><span class="primary">V</span></div>
-                    <div class="key" data-code="KeyB" style="grid-column:8;grid-row:5;"><span class="primary">B</span></div>
-                    <div class="key" data-code="KeyN" style="grid-column:9;grid-row:5;"><span class="primary">N</span></div>
-                    <div class="key" data-code="KeyM" style="grid-column:10;grid-row:5;"><span class="primary">M</span></div>
-                    <div class="key left-label" data-code="Comma" style="grid-column:11;grid-row:5;"><span class="corner top">&lt;</span><span class="corner">,</span></div>
-                    <div class="key left-label" data-code="Period" style="grid-column:12;grid-row:5;"><span class="corner top">&gt;</span><span class="corner">.</span></div>
-                    <div class="key left-label" data-code="Slash" style="grid-column:13;grid-row:5;"><span class="corner top">?</span><span class="corner">/</span></div>
-                    <div class="key right-label" data-code="ShiftRight" style="grid-column:14 / span 3;grid-row:5;">Shift</div>
-                    <div class="key cursor big-symbol" data-code="ArrowUp" style="grid-column:20;grid-row:5;">↑</div>
-                    <div class="key numpad left-label" data-code="Numpad1" style="grid-column:23;grid-row:5;"><span class="corner top">1</span><span class="corner">End</span></div>
-                    <div class="key numpad" data-code="Numpad2" style="grid-column:24;grid-row:5;">2 ↓</div>
-                    <div class="key numpad left-label" data-code="Numpad3" style="grid-column:25;grid-row:5;"><span class="corner top">3</span><span class="corner">PgDn</span></div>
-                    <div class="key enter-key" data-code="NumpadEnter" style="grid-column:26;grid-row:5 / span 2;">Enter</div>
-
-                    <div class="key" data-code="ControlLeft" style="grid-column:1;grid-row:6;">Ctrl</div>
-                    <div class="key system blank" data-code="MetaLeft" style="grid-column:2;grid-row:6;">Win</div>
-                    <div class="key" data-code="AltLeft" style="grid-column:3;grid-row:6;">Alt</div>
-                    <div class="key" data-code="Space" style="grid-column:4 / span 9;grid-row:6;">Space</div>
-                    <div class="key" data-code="AltRight" style="grid-column:13;grid-row:6;">Alt Gr</div>
-                    <div class="key system blank" data-code="MetaRight" style="grid-column:14;grid-row:6;">Win</div>
-                    <div class="key application blank" data-code="ContextMenu" style="grid-column:15;grid-row:6;">Menu</div>
-                    <div class="key" data-code="ControlRight" style="grid-column:16;grid-row:6;">Ctrl</div>
-                    <div class="key cursor big-symbol" data-code="ArrowLeft" style="grid-column:19;grid-row:6;">←</div>
-                    <div class="key cursor big-symbol" data-code="ArrowDown" style="grid-column:20;grid-row:6;">↓</div>
-                    <div class="key cursor big-symbol" data-code="ArrowRight" style="grid-column:21;grid-row:6;">→</div>
-                    <div class="key numpad left-label" data-code="Numpad0" style="grid-column:23 / span 2;grid-row:6;"><span class="corner top">0</span><span class="corner">Ins</span></div>
-                    <div class="key numpad left-label" data-code="NumpadDecimal" style="grid-column:25;grid-row:6;"><span class="corner top">.</span><span class="corner">Del</span></div>
+                <div class="legend" aria-label="keyboard segment legend">
+                    <span class="legend-item typing">Typing block</span>
+                    <span class="legend-item function">Function keys</span>
+                    <span class="legend-item system">System modifiers</span>
+                    <span class="legend-item enter">Enter keys</span>
+                    <span class="legend-item nav">Navigation / cursor</span>
+                    <span class="legend-item numpad">Numeric keypad</span>
                 </div>
             </div>
-        </div>
-
-        <div class="keyboard-legend" aria-label="keyboard color legend">
-            <div class="legend-item"><span class="legend-swatch"></span>Typewriter keys</div>
-            <div class="legend-item"><span class="legend-swatch function"></span>Function keys</div>
-            <div class="legend-item"><span class="legend-swatch enter-key"></span>Enter keys</div>
-            <div class="legend-item"><span class="legend-swatch system"></span>System keys</div>
-            <div class="legend-item"><span class="legend-swatch numpad"></span>Numeric keypad</div>
-            <div class="legend-item"><span class="legend-swatch other"></span>Other</div>
-            <div class="legend-item"><span class="legend-swatch application"></span>Application key</div>
-            <div class="legend-item"><span class="legend-swatch cursor"></span>Cursor control keys</div>
         </div>
 
         <div class="mouse-pad">
